@@ -18,7 +18,7 @@
 //! ```no_run
 //! # struct NonFatalError;
 //! # struct FatalError;
-//!
+//! #
 //! fn my_computation() -> (f64, Option<NonFatalError>) // ...
 //! # {
 //! # (1.5, None)
@@ -30,8 +30,7 @@
 //! # Ok(5.0 * val)
 //! # }
 //!
-//! fn calls_my_computation() -> Result<(f64, Option<NonFatalError>), FatalError>
-//! {
+//! fn calls_my_computation() -> Result<(f64, Option<NonFatalError>), FatalError> {
 //!     let (val, maybe_err) = my_computation();
 //!     
 //!     Ok((failable(val)?, maybe_err))
@@ -186,7 +185,7 @@
 //! you could probably defer to something like [`anyhow::Context`](https://docs.rs/anyhow/latest/anyhow/trait.Context.html)
 //! if you wanted to and were okay with erasing the type to some degree.
 //!
-//! Next, let's create our warning. If you want something simple, feel free to go with [`BasicWarning`](basic_warning::BasicWarning),
+//! Next, let's create our warning. If you want something simple, feel free to go with [`BasicWarning`],
 //! but for the sake of example let's build our own real quick.
 //!
 //! ```
@@ -504,7 +503,7 @@ pub use basic_warning::BasicWarning;
 /// All [`Warning`]s must implement [`From`] for their underlying type(s), which should construct
 /// them in the "ok" state (i.e. no warning has occurred).
 pub trait Warning<T>: Sized + From<T> {
-    /// The underlying error. This generally will, but does not have to, implement [`Error`].
+    /// The underlying error. This generally will, but does not have to, implement [`Error`](std::error::Error).
     type Err;
 
     /// Returns `true` if the underlying value is a successful computation.
@@ -523,7 +522,7 @@ pub trait Warning<T>: Sized + From<T> {
     ///
     /// This essentially "ignores" the warning (if any), hence the name.
     ///
-    /// If you want to force checking for a warning first, use [`Warning::unwrap`]
+    /// If you want to force checking for a warning first, use [`Warning::to_result`]
     fn ignore(self) -> T;
 
     /// Deconstructs the type and returns the underlying error. This will return [`None`] in the case
@@ -578,9 +577,10 @@ pub trait Combineable<E> {
 /// with the successfully computed value, otherwise this will be [`combine`]d with the error from the other
 /// failed computation.
 ///
-/// You may use this directly, but may find the [`ResultWarnExt::or_recover`] option more ergonomic in most cases.
+/// You may use this directly, but may find the [`ResultTryRecoverExt::try_recover`] option more ergonomic in most cases.
 ///
 /// [`combine`]: Combineable::combine
+/// [`Error`]: std::error::Error
 pub trait Recoverable<E>: Combineable<E> + Sized {
     /// The [`Warning`] this error will be converted into if successfully recovered from.
     type Warning<T>: Warning<T, Err = Self>;
